@@ -5,6 +5,8 @@
 
 ## Instructions for use
 
+We assume you have Python and conda conda installed.
+
 To install this repository:
 - first you should clone the repository with git (git clone git@github.com:UW-MLGEO/MLGEO2024_liamkp.git)
 - Next, create a conda environment (conda env create -f environment.yml -n YOUR_ENV_NAME_HERE)
