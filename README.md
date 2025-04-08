@@ -5,9 +5,10 @@
 
 ## Instructions for use
 
-To install this repository, first you should clone the repository with git (git clone git@github.com:UW-MLGEO/MLGEO2024_liamkp.git)
-Next, create a conda environment (conda env create -f environment.yml -n YOUR_ENV_NAME_HERE)
-Finally, activate the conda environment (conda activate YOUR_ENV_NAME_HERE)
+To install this repository:
+- first you should clone the repository with git (git clone git@github.com:UW-MLGEO/MLGEO2024_liamkp.git)
+- Next, create a conda environment (conda env create -f environment.yml -n YOUR_ENV_NAME_HERE)
+- Finally, activate the conda environment (conda activate YOUR_ENV_NAME_HERE)
 
 All data for this project is included in the repository. This is because the datasets are quite small << 1 mb, and in simple .csv formats.
 
