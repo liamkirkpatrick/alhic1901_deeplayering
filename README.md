@@ -16,13 +16,14 @@ All data for this project is included in the repository. This is because the dat
 - data
   - ECM
   - sampling
-      - **CFA** *Contains Dartmouth CFA datasets, including abakus particle data and liquid conductivity*
-      - **water isotopes** *Contains water isotope data*
-      - **GHG** *Contains GHG data, including CO2 and CH4*
-      - **coulter Counter** *Contains Coulter Counter Dusts datasets*
-      - **IC / ICMPS** *Contains IC and ICPMS datasets*
+      - **CFA** - *Contains Dartmouth CFA datasets, including abakus particle data and liquid conductivity*
+      - **water isotopes** - *Contains water isotope data*
+      - **GHG** - *Contains GHG data, including CO2 and CH4*
+      - **coulter Counter** - *Contains Coulter Counter Dusts datasets*
+      - **IC / ICMPS** - *Contains IC and ICPMS datasets*
 - scripts
   - base_scripts
   - data proccessing
-      - **read_CFA.ipynb**
+      - **read_CFA.ipynb** 
       - **read_GHG.ipynb**
+      - **text** - *text*
