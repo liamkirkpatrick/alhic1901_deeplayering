@@ -14,7 +14,7 @@ import math
 
 #%% User inputs
 
-path_to_data = '../../data/'
+path_to_data = '../../data/ecm/'
 metadata = 'metadata.csv'
 
 #%% Define ECM Class
@@ -42,7 +42,7 @@ class ECM:
         
         # open core csv
         fname = self.core+'-'+self.section+'-'+self.face+'-'+self.ACorDC+'.csv'
-        raw = pd.read_csv(path_to_data+self.core+'/'+fname)
+        raw = pd.read_csv(path_to_data+fname)
         
 
         
