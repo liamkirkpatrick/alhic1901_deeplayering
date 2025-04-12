@@ -62,6 +62,7 @@ class ECM:
         for y in self.y_vec:
             idx = self.y==y
             track_length = max(self.depth[idx]) - min(self.depth[idx])
+
             # remove tracks not within 1cm of overall length
             if abs(approx_length - track_length) > 0.01:
                 self.meas = self.meas[np.invert(idx)]
@@ -213,9 +214,9 @@ class core_section:
     def __init__(self,section,core,ACorDC,data,sections,faces,cores,ACorDCs):
 
         # find data
-        t = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == '228_4' and f == 't' and c == core and acdc == ACorDC), None)
-        r = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == '228_4' and f == 'r' and c == core and acdc == ACorDC), None)
-        l = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == '228_4' and f == 'l' and c == core and acdc == ACorDC), None)
+        t = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == section and f == 't' and c == core and acdc == ACorDC), None)
+        r = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == section and f == 'r' and c == core and acdc == ACorDC), None)
+        l = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == section and f == 'l' and c == core and acdc == ACorDC), None)
 
         # assign metadata
         self.core = core
@@ -255,11 +256,11 @@ class core_section:
         
         # LEFT
         x_l = self.left.y_s * 0
-        y_l = (self.left.y_s - self.left.y_left)
+        y_l = (self.left.y_s - self.left.y_right) * -1
 
         # RIGHT
         x_r = self.right.y_s * 0
-        y_r = (self.right.y_s - self.right.y_right) * -1
+        y_r = (self.right.y_s -  self.right.y_left)
         
         # update sections, dividing by 1000 to put in units of m
         self.top.add_3d_to_face(x_t/1000,y_t/1000)
