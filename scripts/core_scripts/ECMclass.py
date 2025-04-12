@@ -11,6 +11,8 @@ Created on Tue Mar 26 22:31:42 2024
 import pandas as pd
 import numpy as np
 import math
+from tqdm import tqdm
+
 
 #%% User inputs
 
@@ -44,8 +46,6 @@ class ECM:
         fname = self.core+'-'+self.section+'-'+self.face+'-'+self.ACorDC+'.csv'
         raw = pd.read_csv(path_to_data+fname)
         
-
-        
         # assign vectors
         self.meas = raw['meas'].to_numpy()
         self.y = raw['Y_dimension(mm)'].to_numpy()
@@ -54,6 +54,7 @@ class ECM:
         self.y_vec = np.unique(self.y)
         if 'button_raw' in raw.columns:
             self.button_raw = raw['button_raw'].to_numpy()
+        self.y_space = self.y_vec[1] - self.y_vec[0]
             
         # remove tracks that are incomplete
         lenth = []
@@ -201,14 +202,78 @@ class ECM:
                 strackave = np.mean(self.meas_s[strack_idx*sbutton_idx])
                 self.meas_s[strack_idx] = self.meas_s[strack_idx] / strackave
 
+    def add_3d_to_face(self,x,y):
         
+        self.x_3d = x
+        self.y_3d = y
+
+
+class core_section:
+
+    def __init__(self,section,core,ACorDC,data,sections,faces,cores,ACorDCs):
+
+        # find data
+        t = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == '228_4' and f == 't' and c == core and acdc == ACorDC), None)
+        r = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == '228_4' and f == 'r' and c == core and acdc == ACorDC), None)
+        l = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == '228_4' and f == 'l' and c == core and acdc == ACorDC), None)
+
+        # assign metadata
+        self.core = core
+        self.section = section
+
+        # assign faces if they exist
+        if t is None:
+            raise ValueError(f"No data found for top face of section {section} in core {core}")
+        else:
+            self.top = t
+        if l is None:
+            raise ValueError(f"No data found for left face of section {section} in core {core}")
+        else:
+            self.left = l
+        if r is None:
+            raise ValueError(f"No data found for right face of section {section} in core {core}")
+        else:
+            self.right = r
+
+    def get_angles(self,angle):
+
+        # pull out angles
+        angle_row = angle.loc[angle['section'] == self.section]
+        self.top_angle = angle_row['top_angle'].values[0]
+        self.left_angle = angle_row['left_angle'].values[0]
+        self.right_angle = angle_row['right_angle'].values[0]
+
+    def add_3d_coords(self,top_loc='wide'):
+
+        # TOP
+        y_t = self.top.y_s * 0
+        if top_loc == 'wide':
+            x_t_0 = (self.top.y_right+self.top.y_left)/2
+        elif top_loc == 'tr':
+            x_t_0 = 0
+        x_t = (self.top.y_s - x_t_0) * -1
         
+        # LEFT
+        x_l = self.left.y_s * 0
+        y_l = (self.left.y_s - self.left.y_left)
+
+        # RIGHT
+        x_r = self.right.y_s * 0
+        y_r = (self.right.y_s - self.right.y_right) * -1
+        
+        # update sections, dividing by 1000 to put in units of m
+        self.top.add_3d_to_face(x_t/1000,y_t/1000)
+        self.left.add_3d_to_face(x_l/1000,y_l/1000)
+        self.right.add_3d_to_face(x_r/1000,y_r/1000)
+
 #%% Test
 
 if __name__ == "__main__":
+
+    # TEST ECM
     
     #test = ECM('alhic2201','10_1','t','AC')
-    test = ECM('alhic2302','159_3','t','AC')
+    test = ECM('alhic1901','228_4','t','AC')
     
     test.smooth(1)
     
@@ -219,4 +284,38 @@ if __name__ == "__main__":
     #test.norm_outside()
     
     test.norm_all()
+
+    window = 1
+    meta = pd.read_csv(path_to_data+metadata)
+    # TEST SECTION 
+    data = []
+    cores = []
+    sections = []
+    faces = []
+    ACorDCs = []
+    for index, row in tqdm(meta.iterrows(), total=len(meta), desc="Processing data"):
+        
+        core = row['core']
+            
+        section = row['section']
+        face = row['face']
+        ACorDC = row['ACorDC']
+
+        data_item = ECM(core,section,face,ACorDC)
+        print("Reading "+core+", section "+section+'-'+face+'-'+ACorDC)
+        
+        data_item.rem_ends(15)
+        data_item.smooth(window)
+        data.append(data_item)
+        
+        cores.append(core)
+        sections.append(section)
+        faces.append(face)
+        ACorDCs.append(ACorDC)
+
+    s228_4 = core_section('228_4','alhic1901','AC',data,sections,faces,cores,ACorDCs)
+    print("Core section success")
     
+    s228_4.add_3d_coords()
+    
+# %%
