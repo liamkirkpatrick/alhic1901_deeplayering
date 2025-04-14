@@ -23,7 +23,7 @@ metadata = 'metadata.csv'
 
 class ECM:
     
-    def __init__(self,core,section,face,ACorDC):
+    def __init__(self,core,section,face,ACorDC,path_to_data=path_to_data,metadata=metadata):
         
         # open metadata csv
         meta = pd.read_csv(path_to_data+metadata)
@@ -221,6 +221,7 @@ class core_section:
         # assign metadata
         self.core = core
         self.section = section
+        self.ACorDC = ACorDC
 
         # assign faces if they exist
         if t is None:
@@ -266,6 +267,43 @@ class core_section:
         self.top.add_3d_to_face(x_t/1000,y_t/1000)
         self.left.add_3d_to_face(x_l/1000,y_l/1000)
         self.right.add_3d_to_face(x_r/1000,y_r/1000)
+
+    def to_df(self):
+
+        # create empty dataframe
+        df_full = pd.DataFrame()
+
+        #add faces
+        for f in [self.top,self.left,self.right]:
+
+            df = pd.DataFrame()
+
+            # add top data
+            df['mid_depth'] = f.depth_s
+            df['top_depth'] = f.depth_s
+            df['bottom_depth'] = f.depth_s
+            if self.ACorDC == 'AC':
+                df['AC_ecm'] = f.meas_s
+            else:
+                df['DC_ecm'] = f.meas_s
+            df['effective_center_x'] = f.x_3d
+            df['effective_center_y'] = f.y_3d
+            df['xlo'] = f.x_3d
+            df['xhi'] = f.x_3d
+            df['ylo'] = f.y_3d
+            df['yhi'] = f.y_3d
+
+            # add section and face
+            df['section'] = self.section
+            df['stick'] = f.face
+            df['core'] = self.core
+
+            # add df to df_full
+            df_full = pd.concat([df_full,df],ignore_index=True)
+
+        return df_full
+
+    
 
 #%% Test
 
@@ -318,5 +356,12 @@ if __name__ == "__main__":
     print("Core section success")
     
     s228_4.add_3d_coords()
+    print("3D coordinates success")
+
+    df = s228_4.to_df()
+    print(df.head)
+    print("Dataframe success")
+
+
     
 # %%
