@@ -244,6 +244,7 @@ class core_section:
         self.top_angle = angle_row['top_angle'].values[0]
         self.left_angle = angle_row['left_angle'].values[0]
         self.right_angle = angle_row['right_angle'].values[0]
+        self.side_angle = angle_row['side_angle'].values[0]
 
     def add_3d_coords(self,top_loc='wide'):
 
