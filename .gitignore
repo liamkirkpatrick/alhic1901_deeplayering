@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# ignore broader context data
+data/broader_context/
+
 # .DS_store
 .DS_Store
 
