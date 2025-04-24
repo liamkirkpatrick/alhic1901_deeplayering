@@ -289,10 +289,10 @@ class core_section:
                 df['DC_ecm'] = f.meas_s
             df['effective_center_x'] = f.x_3d
             df['effective_center_y'] = f.y_3d
-            df['xlo'] = f.x_3d
-            df['xhi'] = f.x_3d
-            df['ylo'] = f.y_3d
-            df['yhi'] = f.y_3d
+            df['x_lo'] = f.x_3d
+            df['x_hi'] = f.x_3d
+            df['y_lo'] = f.y_3d
+            df['y_hi'] = f.y_3d
 
             # add section and face
             df['section'] = self.section
