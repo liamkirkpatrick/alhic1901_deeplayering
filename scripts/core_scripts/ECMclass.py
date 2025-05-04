@@ -23,7 +23,7 @@ metadata = 'metadata.csv'
 
 class ECM:
     
-    def __init__(self,core,section,face,ACorDC,path_to_data=path_to_data,metadata=metadata):
+    def __init__(self,core,section,face,ACorDC,path_to_data='ecm/raw/',metadata=metadata):
         
         # open metadata csv
         meta = pd.read_csv(path_to_data+metadata)
@@ -31,7 +31,6 @@ class ECM:
         row = row.loc[row['section']==section]
         row = row.loc[row['face']==face]
         row = row.loc[row['ACorDC']==ACorDC]
-        
         
         # assign core components
         self.time = row['time'].values[0]
@@ -217,6 +216,7 @@ class core_section:
         t = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == section and f == 't' and c == core and acdc == ACorDC), None)
         r = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == section and f == 'r' and c == core and acdc == ACorDC), None)
         l = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == section and f == 'l' and c == core and acdc == ACorDC), None)
+        o = next((d for d, sec, f, c, acdc in zip(data, sections, faces,cores,ACorDCs) if sec == section and f == 'o' and c == core and acdc == ACorDC), None)
 
         # assign metadata
         self.core = core
@@ -225,17 +225,21 @@ class core_section:
 
         # assign faces if they exist
         if t is None:
-            raise ValueError(f"No data found for top face of section {section} in core {core}")
+            print(f"No data found for top face of section {section} in core {core}")
         else:
             self.top = t
         if l is None:
-            raise ValueError(f"No data found for left face of section {section} in core {core}")
+            print(f"No data found for left face of section {section} in core {core}")
         else:
             self.left = l
         if r is None:
-            raise ValueError(f"No data found for right face of section {section} in core {core}")
+            print(f"No data found for right face of section {section} in core {core}")
         else:
             self.right = r
+        if o is None:
+            print(f"No data found for opposite face of section {section} in core {core}")
+        else:
+            self.opposite = o
 
     def get_angles(self,angle):
 
@@ -249,34 +253,61 @@ class core_section:
     def add_3d_coords(self,top_loc='wide'):
 
         # TOP
-        y_t = self.top.y_s * 0
-        if top_loc == 'wide':
-            x_t_0 = (self.top.y_right+self.top.y_left)/2
-        elif top_loc == 'tr':
-            x_t_0 = 0
-        x_t = (self.top.y_s - x_t_0) * -1
+        if not hasattr(self, 'top'):
+            print("The 'top' face does not exist for this core section.")
+        else:
+            y_t = self.top.y_s * 0
+            if top_loc == 'wide':
+                x_t_0 = (self.top.y_right+self.top.y_left)/2
+            elif top_loc == 'tr':
+                x_t_0 = 0
+            x_t = (self.top.y_s - x_t_0) * -1
+            self.top.add_3d_to_face(x_t/1000,y_t/1000)
         
         # LEFT
-        x_l = self.left.y_s * 0
-        y_l = (self.left.y_s - self.left.y_right) * -1
+        if not hasattr(self, 'left'):
+            print("The 'left' face does not exist for this core section.")
+        else:
+            x_l = self.left.y_s * 0
+            y_l = (self.left.y_s - self.left.y_right) * -1
+            self.left.add_3d_to_face(x_l/1000,y_l/1000)
 
         # RIGHT
-        x_r = self.right.y_s * 0
-        y_r = (self.right.y_s -  self.right.y_left)
-        
-        # update sections, dividing by 1000 to put in units of m
-        self.top.add_3d_to_face(x_t/1000,y_t/1000)
-        self.left.add_3d_to_face(x_l/1000,y_l/1000)
-        self.right.add_3d_to_face(x_r/1000,y_r/1000)
+        if not hasattr(self, 'right'):
+            print("The 'right' face does not exist for this core section.")
+        else:
+            x_r = self.right.y_s * 0
+            y_r = (self.right.y_s -  self.right.y_left)
+            self.right.add_3d_to_face(x_r/1000,y_r/1000)
+
+        # Opposite
+        if not hasattr(self, 'opposite'):
+            print("The 'opposite' face does not exist for this core section.")
+        else:
+            y_t = self.opposite.y_s * 0
+            x_t_0 = (self.opposite.y_right+self.opposite.y_left)/2
+            x_t = (self.opposite.y_s - x_t_0)
+            self.opposite.add_3d_to_face(x_t/1000,y_t/1000)
 
     def to_df(self):
 
         # create empty dataframe
         df_full = pd.DataFrame()
 
-        #add faces
-        for f in [self.top,self.left,self.right]:
+        faces = []
+        if  hasattr(self, 'opposite'):
+            faces.append(self.opposite)
+        if hasattr(self, 'top'):
+            faces.append(self.top)
+        if hasattr(self, 'left'):
+            faces.append(self.left)
+        if hasattr(self, 'right'):
+            faces.append(self.right)
 
+        # loop through faces
+        for f in faces:
+            
+            # create empty dataframe
             df = pd.DataFrame()
 
             # add top data
@@ -304,6 +335,51 @@ class core_section:
 
         return df_full
 
+    # def to_df(self):
+
+    #     # create empty dataframe
+    #     df_full = pd.DataFrame()
+
+    #     faces = []
+    #     if  hasattr(self, 'opposite'):
+    #         faces.append(self.opposite)
+    #     if hasattr(self, 'top'):
+    #         faces.append(self.top)
+    #     if hasattr(self, 'left'):
+    #         faces.append(self.left)
+    #     if hasattr(self, 'right'):
+    #         faces.append(self.right)
+
+    #     # loop through faces
+    #     for f in faces:
+            
+    #         # create empty dataframe
+    #         df = pd.DataFrame()
+
+    #         # add top data
+    #         df['mid_depth'] = f.depth_s
+    #         df['top_depth'] = f.depth_s
+    #         df['bottom_depth'] = f.depth_s
+    #         if self.ACorDC == 'AC':
+    #             df['AC_ecm'] = f.meas_s
+    #         else:
+    #             df['DC_ecm'] = f.meas_s
+    #         df['effective_center_x'] = f.x_3d
+    #         df['effective_center_y'] = f.y_3d
+    #         df['x_lo'] = f.x_3d
+    #         df['x_hi'] = f.x_3d
+    #         df['y_lo'] = f.y_3d
+    #         df['y_hi'] = f.y_3d
+
+    #         # add section and face
+    #         df['section'] = self.section
+    #         df['stick'] = f.face
+    #         df['core'] = self.core
+
+    #         # add df to df_full
+    #         df_full = pd.concat([df_full,df],ignore_index=True)
+
+    #     return df_full
     
 
 #%% Test
