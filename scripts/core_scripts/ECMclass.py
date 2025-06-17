@@ -284,10 +284,10 @@ class core_section:
         if not hasattr(self, 'opposite'):
             print("The 'opposite' face does not exist for this core section.")
         else:
-            y_t = self.opposite.y_s * 0
-            x_t_0 = (self.opposite.y_right+self.opposite.y_left)/2
-            x_t = (self.opposite.y_s - x_t_0)
-            self.opposite.add_3d_to_face(x_t/1000,y_t/1000)
+            y_o = self.opposite.y_s * 0
+            x_o_0 = (self.opposite.y_right+self.opposite.y_left)/2
+            x_o = (self.opposite.y_s - x_o_0)
+            self.opposite.add_3d_to_face(x_o/1000,y_o/1000)
 
     def to_df(self):
 
